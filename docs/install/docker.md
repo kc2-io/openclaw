@@ -66,6 +66,40 @@ It writes config/workspace on the host:
 
 Running on a VPS? See [Hetzner (Docker VPS)](/install/hetzner).
 
+### Pre-built images
+
+Pre-built images are available from GitHub Container Registry:
+
+```bash
+docker pull ghcr.io/openclaw/openclaw:latest
+```
+
+Available tags:
+
+- `latest` — latest stable release
+- `main` — latest build from the `main` branch (development)
+- `<version>` — specific release (e.g., `2026.2.25`)
+
+Browse all tags at the
+[GHCR package page](https://github.com/openclaw/openclaw/pkgs/container/openclaw).
+
+To use a pre-built image with Docker Compose, use the repo's
+[`docker-compose.yml`](https://github.com/openclaw/openclaw/blob/main/docker-compose.yml)
+as a starting point and set the `image` field instead of building locally:
+
+```yaml
+services:
+  openclaw-gateway:
+    image: ghcr.io/openclaw/openclaw:latest
+    # ...rest of your compose config
+```
+
+<Note>
+`docker-setup.sh` is the recommended way to get started and does not currently support pre-built images.
+It handles onboarding, token generation, extra mounts, and custom apt packages automatically. Only use
+pre-built images if you're comfortable configuring these steps yourself.
+</Note>
+
 ### Shell Helpers (optional)
 
 For easier day-to-day Docker management, install `ClawDock`:
