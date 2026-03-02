@@ -19,7 +19,7 @@ import {
   type ResolvedIrcAccount,
 } from "./accounts.js";
 import { IrcConfigSchema } from "./config-schema.js";
-import { monitorIrcProvider } from "./monitor.js";
+import { getActiveIrcClient, monitorIrcProvider } from "./monitor.js";
 import {
   normalizeIrcMessagingTarget,
   looksLikeIrcTargetId,
@@ -297,17 +297,21 @@ export const ircPlugin: ChannelPlugin<ResolvedIrcAccount, IrcProbe> = {
     chunkerMode: "markdown",
     textChunkLimit: 350,
     sendText: async ({ to, text, accountId, replyToId }) => {
+      const resolvedAccountId = accountId ?? undefined;
       const result = await sendMessageIrc(to, text, {
-        accountId: accountId ?? undefined,
+        accountId: resolvedAccountId,
         replyTo: replyToId ?? undefined,
+        client: getActiveIrcClient(resolvedAccountId ?? "default"),
       });
       return { channel: "irc", ...result };
     },
     sendMedia: async ({ to, text, mediaUrl, accountId, replyToId }) => {
+      const resolvedAccountId = accountId ?? undefined;
       const combined = mediaUrl ? `${text}\n\nAttachment: ${mediaUrl}` : text;
       const result = await sendMessageIrc(to, combined, {
-        accountId: accountId ?? undefined,
+        accountId: resolvedAccountId,
         replyTo: replyToId ?? undefined,
+        client: getActiveIrcClient(resolvedAccountId ?? "default"),
       });
       return { channel: "irc", ...result };
     },

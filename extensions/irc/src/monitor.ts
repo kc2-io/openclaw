@@ -8,6 +8,13 @@ import { makeIrcMessageId } from "./protocol.js";
 import { getIrcRuntime } from "./runtime.js";
 import type { CoreConfig, IrcInboundMessage } from "./types.js";
 
+const activeClients = new Map<string, IrcClient>();
+
+export function getActiveIrcClient(accountId: string): IrcClient | undefined {
+  const client = activeClients.get(accountId);
+  return client?.isReady() ? client : undefined;
+}
+
 export type IrcMonitorOptions = {
   accountId?: string;
   config?: CoreConfig;
@@ -74,6 +81,7 @@ export async function monitorIrcProvider(opts: IrcMonitorOptions): Promise<{ sto
         }
       },
       onError: (error) => {
+        activeClients.delete(account.accountId);
         logger.error(`[${account.accountId}] IRC error: ${error.message}`);
       },
       onPrivmsg: async (event) => {
@@ -133,12 +141,15 @@ export async function monitorIrcProvider(opts: IrcMonitorOptions): Promise<{ sto
     }),
   );
 
+  activeClients.set(account.accountId, client);
+
   logger.info(
     `[${account.accountId}] connected to ${account.host}:${account.port}${account.tls ? " (tls)" : ""} as ${client.nick}`,
   );
 
   return {
     stop: () => {
+      activeClients.delete(account.accountId);
       client?.quit("shutdown");
       client = null;
     },
